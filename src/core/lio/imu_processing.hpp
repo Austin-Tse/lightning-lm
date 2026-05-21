@@ -145,7 +145,7 @@ inline void ImuProcess::IMUInit(const MeasureGroup &meas, ESKF &kf_state, int &N
 
         mean_acc_ += (cur_acc - mean_acc_) / N;
         mean_gyr_ += (cur_gyr - mean_gyr_) / N;
-
+        // 这两行是在在线递推估计 IMU 加速度和角速度的逐轴方差/协方差对角项
         cov_acc_ =
             cov_acc_ * (N - 1.0) / N + (cur_acc - mean_acc_).cwiseProduct(cur_acc - mean_acc_) * (N - 1.0) / (N * N);
         cov_gyr_ =
