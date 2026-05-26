@@ -62,6 +62,12 @@ class PangolinWindow {
     /// 设置需要保留多少个扫描数据
     void SetCurrentScanSize(int current_scan_size);
 
+    /// 设置UI渲染用的scan体素降采样尺寸，<=0表示不额外降采样
+    void SetScanRenderVoxelSize(float voxel_size);
+
+    /// 设置UI每帧scan最多显示多少个点，<=0表示不限制
+    void SetMaxPointsPerScan(int max_points);
+
    private:
     std::shared_ptr<PangolinWindowImpl> impl_ = nullptr;
 };

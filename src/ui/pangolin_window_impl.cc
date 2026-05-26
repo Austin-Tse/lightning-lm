@@ -52,12 +52,16 @@ void PangolinWindowImpl::Reset(const std::vector<Keyframe::Ptr> &keyframes) {
         traj_scans_->AddPt(keyframe->GetOptPose());
     }
 
-    std::size_t i = keyframes.size() > max_size_of_current_scan_ ? keyframes.size() - max_size_of_current_scan_ : 0;
+    std::size_t i = 0;
+    if (max_size_of_current_scan_ > 0 &&
+        keyframes.size() > static_cast<std::size_t>(max_size_of_current_scan_)) {
+        i = keyframes.size() - static_cast<std::size_t>(max_size_of_current_scan_);
+    }
     for (; i < keyframes.size(); ++i) {
         const auto &keyframe = keyframes.at(i);
         current_scan_ui_ = std::make_shared<ui::UiCloud>();
         CloudPtr tmp_cloud = std::make_shared<PointCloudType>(*(keyframe->GetCloud()));
-        current_scan_ui_->SetCloud(math::VoxelGrid(tmp_cloud, 0.5), keyframe->GetOptPose());
+        current_scan_ui_->SetCloud(PrepareScanForRender(tmp_cloud), keyframe->GetOptPose());
         current_scan_ui_->SetRenderColor(ui::UiCloud::UseColor::HEIGHT_COLOR);
 
         scans_.emplace_back(current_scan_ui_);
@@ -148,7 +152,7 @@ bool PangolinWindowImpl::UpdateCurrentScan() {
         }
 
         current_scan_ui_ = std::make_shared<ui::UiCloud>();
-        current_scan_ui_->SetCloud(current_scan_, current_scan_pose_);
+        current_scan_ui_->SetCloud(PrepareScanForRender(current_scan_), current_scan_pose_);
         // current_scan_ui_->SetRenderColor(ui::UiCloud::UseColor::CUSTOM_COLOR);
         current_scan_ui_->SetRenderColor(ui::UiCloud::UseColor::HEIGHT_COLOR);
         // current_scan_ui_->SetCustomColor(Vec4f(1.0, 1.0, 1.0, 1.0));
@@ -161,11 +165,45 @@ bool PangolinWindowImpl::UpdateCurrentScan() {
         newest_backend_pose_ = current_scan_pose_;
     }
 
-    while (scans_.size() >= max_size_of_current_scan_) {
-        scans_.pop_front();
+    if (max_size_of_current_scan_ > 0) {
+        while (scans_.size() >= static_cast<std::size_t>(max_size_of_current_scan_)) {
+            scans_.pop_front();
+        }
     }
 
     return true;
+}
+
+CloudPtr PangolinWindowImpl::PrepareScanForRender(CloudPtr cloud) const {
+    if (cloud == nullptr || cloud->empty()) {
+        return cloud;
+    }
+
+    CloudPtr render_cloud = cloud;
+    if (scan_render_voxel_size_ > 0.0f) {
+        render_cloud = math::VoxelGrid(cloud, scan_render_voxel_size_);
+    }
+
+    if (max_points_per_scan_ > 0 && render_cloud->size() > static_cast<std::size_t>(max_points_per_scan_)) {
+        CloudPtr sampled(new PointCloudType);
+        sampled->points.reserve(max_points_per_scan_);
+
+        const std::size_t step =
+            (render_cloud->size() + static_cast<std::size_t>(max_points_per_scan_) - 1) /
+            static_cast<std::size_t>(max_points_per_scan_);
+
+        for (std::size_t i = 0; i < render_cloud->size() && sampled->size() < static_cast<std::size_t>(max_points_per_scan_);
+             i += step) {
+            sampled->points.emplace_back(render_cloud->points[i]);
+        }
+
+        sampled->is_dense = render_cloud->is_dense;
+        sampled->height = 1;
+        sampled->width = sampled->size();
+        render_cloud = sampled;
+    }
+
+    return render_cloud;
 }
 
 bool PangolinWindowImpl::UpdateState() {

@@ -94,6 +94,8 @@ class PangolinWindowImpl {
 
     Sophus::SE3d T_imu_lidar_;
     int max_size_of_current_scan_ = 200;  // 当前扫描数据保留多少个
+    float scan_render_voxel_size_ = 0.0f;  // UI显示用体素滤波，<=0表示不滤波
+    int max_points_per_scan_ = 0;          // UI每帧scan最多点数，<=0表示不限制
     std::vector<std::shared_ptr<Keyframe>> all_keyframes_;
 
     //////////////////////////////// 以下和render相关 ///////////////////////////
@@ -112,6 +114,7 @@ class PangolinWindowImpl {
     bool UpdateDynamicMap();
     bool UpdateState();
     bool UpdateCurrentScan();
+    CloudPtr PrepareScanForRender(CloudPtr cloud) const;
 
     void RenderLabels();
 

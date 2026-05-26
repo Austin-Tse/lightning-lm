@@ -135,4 +135,6 @@ ui:
   car_length: 2.0
   car_width: 1.6
   car_height: 1.7
-  scans: 1
+  scans: 0 # <=0 表示不限制历史scan数量，会显示全部点云；>0 表示最多保留多少帧
+  render_voxel_size: 1.0 # 仅影响UI显示，不影响建图/保存地图；调大可提升鼠标交互流畅度
+  max_points_per_scan: 1200 # 仅影响UI显示，<=0表示不限制

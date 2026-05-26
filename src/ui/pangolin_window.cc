@@ -94,6 +94,10 @@ void PangolinWindow::UpdateKF(std::shared_ptr<Keyframe> kf) {
 
 void PangolinWindow::SetCurrentScanSize(int current_scan_size) { impl_->max_size_of_current_scan_ = current_scan_size; }
 
+void PangolinWindow::SetScanRenderVoxelSize(float voxel_size) { impl_->scan_render_voxel_size_ = voxel_size; }
+
+void PangolinWindow::SetMaxPointsPerScan(int max_points) { impl_->max_points_per_scan_ = max_points; }
+
 void PangolinWindow::SetTImuLidar(const SE3& T_imu_lidar) { impl_->T_imu_lidar_ = T_imu_lidar; }
 
 bool PangolinWindow::ShouldQuit() { return pangolin::ShouldQuit(); }

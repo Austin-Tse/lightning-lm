@@ -47,6 +47,17 @@ bool SlamSystem::Init(const std::string& yaml_path) {
         LOG(INFO) << "slam with 3D UI";
         ui_ = std::make_shared<ui::PangolinWindow>();
         ui_->Init();
+        if (yaml["ui"]) {
+            if (yaml["ui"]["scans"]) {
+                ui_->SetCurrentScanSize(yaml["ui"]["scans"].as<int>());
+            }
+            if (yaml["ui"]["render_voxel_size"]) {
+                ui_->SetScanRenderVoxelSize(yaml["ui"]["render_voxel_size"].as<float>());
+            }
+            if (yaml["ui"]["max_points_per_scan"]) {
+                ui_->SetMaxPointsPerScan(yaml["ui"]["max_points_per_scan"].as<int>());
+            }
+        }
 
         lio_->SetUI(ui_);
     }
